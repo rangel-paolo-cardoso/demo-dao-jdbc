@@ -8,8 +8,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mysql.cj.xdevapi.Result;
-
 import db.DB;
 import db.DbException;
 import model.dao.DepartmentDao;
@@ -59,9 +57,9 @@ public class DepartmentDaoJDBC implements DepartmentDao {
         try {
             st = conn.prepareStatement(
                     "UPDATE department "
-                    + "SET "
-                    + "Name = ?"
-                    + "WHERE Id = ?",
+                            + "SET "
+                            + "Name = ?"
+                            + "WHERE Id = ?",
                     Statement.RETURN_GENERATED_KEYS);
 
             st.setString(1, obj.getName());
@@ -77,6 +75,22 @@ public class DepartmentDaoJDBC implements DepartmentDao {
 
     @Override
     public void deleteById(Integer id) {
+        PreparedStatement st = null;
+        try {
+            st = conn.prepareStatement("DELETE FROM department WHERE Id = ?");
+
+            st.setInt(1, id);
+
+            int rows = st.executeUpdate();
+
+            if (rows == 0) {
+                throw new DbException("The informed id does not exist in the database!");
+            }
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+        }
     }
 
     @Override
