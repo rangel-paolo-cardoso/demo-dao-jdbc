@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.mysql.cj.xdevapi.Result;
@@ -36,14 +37,14 @@ public class DepartmentDaoJDBC implements DepartmentDao {
     @Override
     public Department findById(Integer id) {
         PreparedStatement st = null;
+        ResultSet rs = null;
         try {
             st = conn.prepareStatement(
-                "SELECT * FROM department "
-                + "WHERE Id = ?"
-            );
+                    "SELECT * FROM department "
+                            + "WHERE Id = ?");
             st.setInt(1, id);
 
-            ResultSet rs = st.executeQuery();
+            rs = st.executeQuery();
             if (rs.next()) {
                 Department department = new Department();
                 department.setId(rs.getInt(1));
@@ -55,11 +56,33 @@ public class DepartmentDaoJDBC implements DepartmentDao {
             throw new DbException(e.getMessage());
         } finally {
             DB.closeStatement(st);
+            DB.closeResultSet(rs);
         }
     }
 
     @Override
     public List<Department> findAll() {
-        return null;
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        try {
+            st = conn.prepareStatement("SELECT * FROM department");
+
+            rs = st.executeQuery();
+            List<Department> list = new ArrayList<>();
+
+            while (rs.next()) {
+                Department department = new Department();
+                department.setId(rs.getInt(1));
+                department.setName(rs.getString(2));
+                list.add(department);
+            }
+
+            return list;
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeResultSet(rs);
+            DB.closeStatement(st);
+        }
     }
 }
